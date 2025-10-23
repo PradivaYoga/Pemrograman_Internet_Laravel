@@ -6,19 +6,14 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration {
     public function up(): void {
-        Schema::create('mahasiswas', function (Blueprint $table) {
+        Schema::create('fakultas', function (Blueprint $table) {
             $table->id();
-            $table->string('nim', 15)->unique();
             $table->string('nama', 100);
-            $table->foreignId('id_prodi')
-                  ->nullable()
-                  ->constrained('prodis')
-                  ->onDelete('set null');
             $table->timestamps();
         });
     }
 
     public function down(): void {
-        Schema::dropIfExists('mahasiswas');
+        Schema::dropIfExists('fakultas');
     }
 };

@@ -2,7 +2,7 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <title>Tambah Mahasiswa</title>
+    <title>Tambah Program Studi</title>
     <style>
         body { font-family: Arial, sans-serif; background: #eef2f5; text-align: center; }
         form { display: inline-block; background: white; padding: 20px; border-radius: 10px; margin-top: 40px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
@@ -12,23 +12,18 @@
     </style>
 </head>
 <body>
-    <h2>Tambah Mahasiswa</h2>
-    <form method="POST" action="{{ route('mahasiswa.store') }}">
+    <h2>Tambah Program Studi</h2>
+    <form action="{{ route('prodi.store') }}" method="POST">
         @csrf
-        <input type="number" name="nim" placeholder="NIM" required><br>
-        <input type="text" name="nama" placeholder="Nama" required><br>
-
-        <select name="id_prodi" required>
-            <option value="">-- Pilih Program Studi --</option>
-            @foreach(\App\Models\Prodi::orderBy('nama')->get() as $p)
-                <option value="{{ $p->id }}">
-                    {{ $p->nama }} ({{ $p->fakultas->nama ?? '-' }})
-                </option>
+        <input type="text" name="nama" placeholder="Nama Prodi" required><br>
+        <select name="id_fakultas" required>
+            <option value="">-- Pilih Fakultas --</option>
+            @foreach($fakultas as $f)
+                <option value="{{ $f->id }}">{{ $f->nama }}</option>
             @endforeach
         </select><br>
-
         <button type="submit">Simpan</button>
     </form>
-    <a href="{{ route('mahasiswa.index') }}">Kembali</a>
+    <a href="{{ route('prodi.index') }}">Kembali</a>
 </body>
 </html>

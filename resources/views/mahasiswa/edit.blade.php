@@ -6,7 +6,7 @@
     <style>
         body { font-family: Arial, sans-serif; background: #eef2f5; text-align: center; }
         form { display: inline-block; background: white; padding: 20px; border-radius: 10px; margin-top: 40px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
-        input { margin: 10px; padding: 8px; width: 250px; border-radius: 6px; border: 1px solid #ccc; }
+        input, select { margin: 10px; padding: 8px; width: 250px; border-radius: 6px; border: 1px solid #ccc; }
         button { background: #007BFF; color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; }
         a { display: block; margin-top: 15px; color: #007BFF; text-decoration: none; }
     </style>
@@ -18,7 +18,16 @@
         @method('PUT')
         <input type="number" name="nim" value="{{ $mahasiswa->nim }}" required><br>
         <input type="text" name="nama" value="{{ $mahasiswa->nama }}" required><br>
-        <input type="text" name="prodi" value="{{ $mahasiswa->prodi }}" required><br>
+
+        <select name="id_prodi" required>
+            <option value="">-- Pilih Program Studi --</option>
+            @foreach(\App\Models\Prodi::orderBy('nama')->get() as $p)
+                <option value="{{ $p->id }}" {{ $p->id == $mahasiswa->id_prodi ? 'selected' : '' }}>
+                    {{ $p->nama }} ({{ $p->fakultas->nama ?? '-' }})
+                </option>
+            @endforeach
+        </select><br>
+
         <button type="submit">Perbarui</button>
     </form>
     <a href="{{ route('mahasiswa.index') }}">Kembali</a>

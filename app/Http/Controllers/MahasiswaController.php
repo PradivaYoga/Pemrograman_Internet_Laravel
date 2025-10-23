@@ -4,18 +4,22 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Mahasiswa;
+use App\Models\Prodi;
 
 class MahasiswaController extends Controller
 {
     public function index()
     {
-        $mahasiswas = Mahasiswa::orderBy('id', 'asc')->get();
+        // Tampilkan mahasiswa beserta relasi prodi dan fakultas
+        $mahasiswas = Mahasiswa::with('prodi.fakultas')->orderBy('id', 'asc')->get();
         return view('mahasiswa.index', compact('mahasiswas'));
     }
 
     public function create()
     {
-        return view('mahasiswa.create');
+        // Kirim daftar prodi untuk dropdown
+        $prodis = Prodi::with('fakultas')->orderBy('nama')->get();
+        return view('mahasiswa.create', compact('prodis'));
     }
 
     public function store(Request $request)
@@ -23,13 +27,13 @@ class MahasiswaController extends Controller
         $request->validate([
             'nim' => 'required|numeric|unique:mahasiswas,nim',
             'nama' => 'required|string|max:100',
-            'prodi' => 'required|string|max:50',
+            'id_prodi' => 'required|exists:prodis,id',
         ]);
 
         Mahasiswa::create([
             'nim' => $request->nim,
             'nama' => $request->nama,
-            'prodi' => $request->prodi,
+            'id_prodi' => $request->id_prodi,
         ]);
 
         return redirect()->route('mahasiswa.index')
@@ -39,7 +43,8 @@ class MahasiswaController extends Controller
     public function edit($id)
     {
         $mahasiswa = Mahasiswa::findOrFail($id);
-        return view('mahasiswa.edit', compact('mahasiswa'));
+        $prodis = Prodi::with('fakultas')->orderBy('nama')->get();
+        return view('mahasiswa.edit', compact('mahasiswa', 'prodis'));
     }
 
     public function update(Request $request, $id)
@@ -49,13 +54,13 @@ class MahasiswaController extends Controller
         $request->validate([
             'nim' => 'required|numeric|unique:mahasiswas,nim,' . $mahasiswa->id,
             'nama' => 'required|string|max:100',
-            'prodi' => 'required|string|max:50',
+            'id_prodi' => 'required|exists:prodis,id',
         ]);
 
         $mahasiswa->update([
             'nim' => $request->nim,
             'nama' => $request->nama,
-            'prodi' => $request->prodi,
+            'id_prodi' => $request->id_prodi,
         ]);
 
         return redirect()->route('mahasiswa.index')
