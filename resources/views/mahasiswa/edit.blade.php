@@ -13,23 +13,68 @@
 </head>
 <body>
     <h2>Edit Data Mahasiswa</h2>
+
     <form method="POST" action="{{ route('mahasiswa.update', $mahasiswa->id) }}">
         @csrf
         @method('PUT')
-        <input type="number" name="nim" value="{{ $mahasiswa->nim }}" required><br>
-        <input type="text" name="nama" value="{{ $mahasiswa->nama }}" required><br>
 
-        <select name="id_prodi" required>
-            <option value="">-- Pilih Program Studi --</option>
-            @foreach(\App\Models\Prodi::orderBy('nama')->get() as $p)
-                <option value="{{ $p->id }}" {{ $p->id == $mahasiswa->id_prodi ? 'selected' : '' }}>
-                    {{ $p->nama }} ({{ $p->fakultas->nama ?? '-' }})
+        <input type="number" name="nim" value="{{ $mahasiswa->nim }}" placeholder="NIM" required><br>
+        <input type="text" name="nama" value="{{ $mahasiswa->nama }}" placeholder="Nama" required><br>
+
+        {{-- Dropdown Fakultas --}}
+        <select id="fakultas" name="fakultas" required>
+            <option value="">-- Pilih Fakultas --</option>
+            @foreach(\App\Models\Fakultas::orderBy('nama')->get() as $f)
+                <option value="{{ $f->id }}"
+                    {{ $mahasiswa->prodi && $mahasiswa->prodi->id_fakultas == $f->id ? 'selected' : '' }}>
+                    {{ $f->nama }}
                 </option>
             @endforeach
         </select><br>
 
+        {{-- Dropdown Prodi --}}
+        <select id="prodi" name="id_prodi" required>
+            <option value="">-- Pilih Program Studi --</option>
+            @if($mahasiswa->prodi)
+                @foreach(\App\Models\Prodi::where('id_fakultas', $mahasiswa->prodi->id_fakultas)->get() as $p)
+                    <option value="{{ $p->id }}" {{ $mahasiswa->id_prodi == $p->id ? 'selected' : '' }}>
+                        {{ $p->nama }}
+                    </option>
+                @endforeach
+            @endif
+        </select><br>
+
         <button type="submit">Perbarui</button>
     </form>
+
     <a href="{{ route('mahasiswa.index') }}">Kembali</a>
+
+    {{-- Script AJAX --}}
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        $('#fakultas').on('change', function() {
+            var fakultasID = $(this).val();
+            $('#prodi').html('<option value="">-- Memuat Prodi... --</option>');
+
+            if (fakultasID) {
+                $.ajax({
+                    url: '/get-prodi/' + fakultasID,
+                    type: 'GET',
+                    dataType: 'json',
+                    success: function(data) {
+                        $('#prodi').empty().append('<option value="">-- Pilih Program Studi --</option>');
+                        $.each(data, function(key, value) {
+                            $('#prodi').append('<option value="'+ value.id +'">'+ value.nama +'</option>');
+                        });
+                    },
+                    error: function() {
+                        alert('Gagal memuat data prodi.');
+                    }
+                });
+            } else {
+                $('#prodi').html('<option value="">-- Pilih Program Studi --</option>');
+            }
+        });
+    </script>
 </body>
 </html>

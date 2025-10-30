@@ -18,17 +18,49 @@
         <input type="number" name="nim" placeholder="NIM" required><br>
         <input type="text" name="nama" placeholder="Nama" required><br>
 
-        <select name="id_prodi" required>
-            <option value="">-- Pilih Program Studi --</option>
-            @foreach(\App\Models\Prodi::orderBy('nama')->get() as $p)
-                <option value="{{ $p->id }}">
-                    {{ $p->nama }} ({{ $p->fakultas->nama ?? '-' }})
-                </option>
+        {{-- Dropdown Fakultas --}}
+        <select id="fakultas" name="id_fakultas" required>
+            <option value="">-- Pilih Fakultas --</option>
+            @foreach(\App\Models\Fakultas::orderBy('nama')->get() as $f)
+                <option value="{{ $f->id }}">{{ $f->nama }}</option>
             @endforeach
+        </select><br>
+
+        {{-- Dropdown Prodi (akan berubah otomatis setelah fakultas dipilih) --}}
+        <select id="prodi" name="id_prodi" required>
+            <option value="">-- Pilih Program Studi --</option>
         </select><br>
 
         <button type="submit">Simpan</button>
     </form>
     <a href="{{ route('mahasiswa.index') }}">Kembali</a>
+
+    <script>
+        // Ketika fakultas dipilih, ambil prodi dengan AJAX
+        document.getElementById('fakultas').addEventListener('change', function() {
+            const fakultasId = this.value;
+            const prodiSelect = document.getElementById('prodi');
+            prodiSelect.innerHTML = '<option value="">-- Memuat data... --</option>';
+
+            if (fakultasId) {
+                fetch(`/get-prodi/${fakultasId}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        prodiSelect.innerHTML = '<option value="">-- Pilih Program Studi --</option>';
+                        data.forEach(prodi => {
+                            const option = document.createElement('option');
+                            option.value = prodi.id;
+                            option.textContent = prodi.nama;
+                            prodiSelect.appendChild(option);
+                        });
+                    })
+                    .catch(() => {
+                        prodiSelect.innerHTML = '<option value="">-- Gagal memuat data --</option>';
+                    });
+            } else {
+                prodiSelect.innerHTML = '<option value="">-- Pilih Program Studi --</option>';
+            }
+        });
+    </script>
 </body>
 </html>
