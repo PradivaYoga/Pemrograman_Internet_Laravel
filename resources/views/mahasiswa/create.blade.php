@@ -5,10 +5,38 @@
     <title>Tambah Mahasiswa</title>
     <style>
         body { font-family: Arial, sans-serif; background: #eef2f5; text-align: center; }
-        form { display: inline-block; background: white; padding: 20px; border-radius: 10px; margin-top: 40px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
-        input, select { margin: 10px; padding: 8px; width: 250px; border-radius: 6px; border: 1px solid #ccc; }
-        button { background: #007BFF; color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; }
-        a { display: block; margin-top: 15px; color: #007BFF; text-decoration: none; }
+        form { 
+            display: inline-block; 
+            background: white; 
+            padding: 20px; 
+            border-radius: 10px; 
+            margin-top: 40px; 
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1); 
+        }
+        input, select { 
+            margin: 10px; 
+            padding: 8px; 
+            width: 250px; 
+            border-radius: 6px; 
+            border: 1px solid #ccc; 
+        }
+        button { 
+            background: #007BFF; 
+            color: white; 
+            border: none; 
+            padding: 10px 20px; 
+            border-radius: 6px; 
+            cursor: pointer; 
+            transition: 0.2s;
+        }
+        button:hover { background: #0056b3; }
+        a { 
+            display: block; 
+            margin-top: 15px; 
+            color: #007BFF; 
+            text-decoration: none; 
+        }
+        a:hover { text-decoration: underline; }
     </style>
 </head>
 <body>
@@ -26,7 +54,7 @@
             @endforeach
         </select><br>
 
-        {{-- Dropdown Prodi (akan berubah otomatis setelah fakultas dipilih) --}}
+        {{-- Dropdown Prodi (berubah otomatis via AJAX) --}}
         <select id="prodi" name="id_prodi" required>
             <option value="">-- Pilih Program Studi --</option>
         </select><br>
@@ -36,7 +64,7 @@
     <a href="{{ route('mahasiswa.index') }}">Kembali</a>
 
     <script>
-        // Ketika fakultas dipilih, ambil prodi dengan AJAX
+        // Saat fakultas berubah, ambil daftar prodi melalui AJAX
         document.getElementById('fakultas').addEventListener('change', function() {
             const fakultasId = this.value;
             const prodiSelect = document.getElementById('prodi');
@@ -45,14 +73,21 @@
             if (fakultasId) {
                 fetch(`/get-prodi/${fakultasId}`)
                     .then(response => response.json())
-                    .then(data => {
+                    .then(result => {
                         prodiSelect.innerHTML = '<option value="">-- Pilih Program Studi --</option>';
-                        data.forEach(prodi => {
-                            const option = document.createElement('option');
-                            option.value = prodi.id;
-                            option.textContent = prodi.nama;
-                            prodiSelect.appendChild(option);
-                        });
+
+                        if (result.status === 'success' && Array.isArray(result.data)) {
+                            result.data.forEach(prodi => {
+                                const option = document.createElement('option');
+                                option.value = prodi.id;
+                                option.textContent = prodi.nama;
+                                prodiSelect.appendChild(option);
+                            });
+                        } else if (result.status === 'empty') {
+                            prodiSelect.innerHTML = '<option value="">-- Tidak ada prodi di fakultas ini --</option>';
+                        } else {
+                            prodiSelect.innerHTML = '<option value="">-- Gagal memuat data --</option>';
+                        }
                     })
                     .catch(() => {
                         prodiSelect.innerHTML = '<option value="">-- Gagal memuat data --</option>';
